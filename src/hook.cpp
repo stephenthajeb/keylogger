@@ -1,10 +1,11 @@
 #include <windows.h>
 #include "hook.h"
 #include "config.h"
+#include <cstdio>
 
 HHOOK hHook = NULL;
 
-LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK hookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode == HC_ACTION)
     {
@@ -29,7 +30,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 BOOL installHook()
 {
-    hHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, NULL, 0);
+    hHook = SetWindowsHookEx(WH_KEYBOARD_LL, hookCallback, NULL, 0);
     return hHook != NULL;
 }
 
