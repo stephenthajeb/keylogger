@@ -5,5 +5,6 @@
 #define FLUSH_CHAR_THRESHOLD 300
 #define FLUSH_INTERVAL 60
 #define MAX_BUFFER_LEN 1024
+#define SERVER_HOST "http://localhost:5000"
 
 #endif
