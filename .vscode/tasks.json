@@ -10,7 +10,8 @@
                 "${fileDirname}\\main.cpp",
                 "${fileDirname}\\hook.cpp",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+                "${fileDirname}\\${fileBasenameNoExtension}.exe",
+                "-lwininet"
             ],
             "options": {
                 "cwd": "${fileDirname}"

