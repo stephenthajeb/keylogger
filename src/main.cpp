@@ -75,6 +75,27 @@ void sendToApi(const std::string &filename)
     BOOL sent = HttpSendRequestW(hRequest, wContentType.c_str(), -1L,
                                  (LPVOID)body.c_str(), body.length());
 
+    // Check http response
+    if (sent)
+    {
+        DWORD statusCode = 0;
+        DWORD size = sizeof(statusCode);
+        if (HttpQueryInfo(hRequest, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER,
+                          &statusCode, &size, NULL))
+        {
+            printf("[✓] HTTP response code: %lu\n", statusCode);
+        }
+        else
+        {
+            printf("[!] Failed to retrieve HTTP response code.\n");
+        }
+    }
+    else
+    {
+        printf("[!] HttpSendRequest failed.\n");
+    }
+
+
     InternetCloseHandle(hRequest);
     InternetCloseHandle(hConnect);
     InternetCloseHandle(hInternet);
