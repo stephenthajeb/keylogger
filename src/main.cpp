@@ -152,7 +152,7 @@ int main()
     }
 
     std::thread senderThread([=]()
-                             { startSendTimer(LOG_FILE_PATH, 30); });
+                             { startSendTimer(getLogFilePath(), 30); });
     senderThread.detach();
 
     MSG msg;

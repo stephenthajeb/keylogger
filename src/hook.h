@@ -5,6 +5,6 @@
 
 BOOL installHook();
 void uninstallHook();
-
+const char *getLogFilePath();
 
 #endif
