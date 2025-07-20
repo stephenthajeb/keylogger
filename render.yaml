@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: keylogger-server
+    env: python
+    buildCommand: pip install -r keylogger-server/requirements.txt
+    startCommand: python keylogger-server/server.py
+    plan: free
