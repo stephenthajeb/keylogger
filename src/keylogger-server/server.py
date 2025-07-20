@@ -6,9 +6,9 @@ import os
 import datetime
 
 app = Flask(__name__)
-os.makedirs("logs", exist_ok=True)
 
 LOG_DIR = 'logs'
+os.makedirs(LOG_DIR, exist_ok=True)
 
 @app.route('/', methods=['GET'])
 def health_check():
@@ -29,7 +29,25 @@ def upload():
     print(f"[✓] Received and saved to {path}")
     return "File received", 200
 
-# Download n last logs
+
+@app.route('/logs', methods=['GET'])
+def list_logs():
+    """List all available log files"""
+    try:
+        log_files = []
+        for file in glob.glob(os.path.join(LOG_DIR, "*.txt")):
+            filename = os.path.basename(file)
+            size = os.path.getsize(file)
+            modified = datetime.datetime.fromtimestamp(os.path.getmtime(file))
+            log_files.append({
+                'filename': filename,
+                'size': size,
+                'modified': modified.strftime("%Y-%m-%d %H:%M:%S")
+            })
+        
+        return jsonify(log_files)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/download-latest-log', methods=['GET'])
@@ -51,16 +69,27 @@ def download_latest_logs():
         if len(selected_files) == 1:
             return send_file(selected_files[0], as_attachment=True)
 
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.zip') as tmp_zip:
-            with zipfile.ZipFile(tmp_zip.name, 'w') as zipf:
-                for file_path in selected_files:
-                    zipf.write(file_path, arcname=os.path.basename(file_path))
-            tmp_zip_path = tmp_zip.name
+        # Create temporary zip file
+        tmp_zip_path = None
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.zip') as tmp_zip:
+                with zipfile.ZipFile(tmp_zip.name, 'w') as zipf:
+                    for file_path in selected_files:
+                        zipf.write(file_path, arcname=os.path.basename(file_path))
+                tmp_zip_path = tmp_zip.name
 
-        return send_file(tmp_zip_path, as_attachment=True, download_name='logs.zip')
+            return send_file(tmp_zip_path, as_attachment=True, download_name='logs.zip')
+        finally:
+            # Clean up temp file after sending
+            if tmp_zip_path and os.path.exists(tmp_zip_path):
+                try:
+                    os.unlink(tmp_zip_path)
+                except:
+                    pass
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 9000))
