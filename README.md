@@ -137,12 +137,6 @@ The server is configured for deployment on Render:
 - `requirements.txt`: Python dependencies (Flask)
 - `logs/`: Directory where uploaded log files are stored
 
-## Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
 
 ## License
 
