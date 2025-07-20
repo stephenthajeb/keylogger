@@ -50,7 +50,7 @@ def list_logs():
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/delete', methods=['DELETE'])
+@app.route('/logs', methods=['DELETE'])
 def clear_logs():
     """Delete all log files"""
     try:
