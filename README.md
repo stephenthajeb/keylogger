@@ -76,6 +76,12 @@ GET /download-latest-log?n=
 ```
 Downloads the specified log file.
 
+###  list logs
+```http
+GET /logs
+```
+List existing logs
+
 ## Local Development
 
 ### Prerequisites
