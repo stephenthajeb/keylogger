@@ -50,6 +50,27 @@ def list_logs():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/delete', methods=['DELETE'])
+def clear_logs():
+    """Delete all log files"""
+    try:
+        deleted_count = 0
+        for file in glob.glob(os.path.join(LOG_DIR, "*.txt")):
+            try:
+                os.remove(file)
+                deleted_count += 1
+                print(f"[✓] Deleted: {os.path.basename(file)}")
+            except Exception as e:
+                print(f"[!] Failed to delete {file}: {e}")
+
+        return jsonify({
+            'message': f'Successfully deleted {deleted_count} log files',
+            'deleted_count': deleted_count
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/download-latest-log', methods=['GET'])
 def download_latest_logs():
     try:
