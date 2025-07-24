@@ -15,7 +15,6 @@ keylogger/
 ├── src/keylogger-server/  # Python server for log collection
 │   ├── server.py          # Flask web server
 │   └── requirements.txt   # Python dependencies
-├── logs/                  # Log storage directory
 └── render.yaml           # Render deployment configuration
 ```
 
@@ -149,3 +148,9 @@ The server is configured for deployment on Render:
 This project is for educational purposes. Use responsibly and in accordance with applicable laws and regulations.
 
 
+## Project Deliverables
+- [Slide](https://unsw-my.sharepoint.com/:p:/g/personal/z5631971_ad_unsw_edu_au/EchOVUjmZThNj1qlMIXYSLwBrOsPpQcvJOH7J9-1Q9NGig?e=QJ3w0S)
+- [Project Summary](https://docs.google.com/document/d/15o5bh60u5ztfRfXZL6g6S7dgO_Obo0qOFTUKlc8ogHQ/edit?usp=sharing)
+- [Source Code](https://github.com/stephenthajeb/keylogger)
+
+If the link is not clickable, you can find the slide and project summary document in this repo as alternative.
