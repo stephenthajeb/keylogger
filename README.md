@@ -15,7 +15,6 @@ keylogger/
 ├── src/keylogger-server/  # Python server for log collection
 │   ├── server.py          # Flask web server
 │   └── requirements.txt   # Python dependencies
-├── logs/                  # Log storage directory
 └── render.yaml           # Render deployment configuration
 ```
 
